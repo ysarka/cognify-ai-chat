@@ -1,0 +1,15 @@
+{
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 4,
+    "trailingComma": "all",
+    "printWidth": 120,
+    "overrides": [
+        {
+            "files": ["*.yaml", "*.json", "*.css"],
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ]
+}
