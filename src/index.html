@@ -1,33 +1,68 @@
 <!doctype html>
 <html lang="en">
     <head>
-        <title>Cognify AI Chat</title>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="stylesheet" href="styles.css" />
+        <title>Cognify AI Chat</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
     </head>
-    <body>
-        <header class="header">
-            <h1>Cognify AI Chat</h1>
-        </header>
-        <main>
-            <h2>Welcome to Cognify AI Chat</h2>
-            <p>Your one-stop solution for AI-powered conversations.</p>
-            <div>
-                <section id="messages-history">
-                    <div class="message message-assistant">What can I help you with?</div>
-                    <div class="message message-user">What is your name?</div>
-                    <div class="message message-assistant">I am Cognify, your AI assistant.</div>
-                </section>
-                <form method="post" action="" id="messages-form">
-                    <input id="messages-form-input" type="text" placeholder="Type your message here..." />
-                    <button type="submit">Send</button>
-                </form>
+
+    <body class="h-screen flex bg-gray-100">
+        <aside class="hidden md:flex w-64 flex-shrink-0 bg-gray-900 text-white flex-col">
+            <div class="p-4 border-b border-gray-700">
+                <button class="w-full bg-blue-600 hover:bg-blue-500 rounded-lg px-4 py-2">+ New Chat</button>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto p-2 space-y-2">
+                <a href="#" class="block px-3 py-2 rounded-lg bg-gray-700"> Chat 1 </a>
+
+                <a href="#" class="block px-3 py-2 rounded-lg hover:bg-gray-700"> Chat 2 </a>
+            </nav>
+        </aside>
+
+        <main class="flex flex-col flex-1 bg-white">
+            <div class="flex-1 overflow-y-auto p-6 space-y-4 message-list">
+                <chat-message sender="ai"> Hello! I am Cognify. How can I assist you today? </chat-message>
+
+                <chat-message sender="user"> What can you help me with? </chat-message>
+
+                <chat-message sender="ai">
+                    I can answer questions, explain concepts, and help with coding!
+                </chat-message>
+            </div>
+
+            <div class="border-t bg-white p-4">
+                <div class="flex gap-2 items-end max-w-3xl mx-auto">
+                    <textarea
+                        rows="1"
+                        placeholder="Message AI..."
+                        class="flex-1 resize-none rounded-xl border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    ></textarea>
+
+                    <button class="bg-blue-600 text-white rounded-xl px-4 py-2 flex-shrink-0">Send</button>
+                </div>
             </div>
         </main>
-        <footer>
-            <p>&copy; 2023 Cognify AI Chat. All rights reserved.</p>
-        </footer>
+
+        <script>
+            class ChatMessage extends HTMLElement {
+                connectedCallback() {
+                    const role = this.getAttribute('sender');
+                    const align = role === 'user' ? 'justify-end' : 'justify-start';
+                    const bubbleStyle = role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-900';
+
+                    this.innerHTML = `
+                        <div class="flex ${align}">
+                            <div class="${bubbleStyle} rounded-2xl px-4 py-2 max-w-[60%]">
+                                ${this.innerHTML}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            customElements.define('chat-message', ChatMessage);
+        </script>
     </body>
-    <script src="action.js" type="text/javascript"></script>
 </html>
