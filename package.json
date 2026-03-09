@@ -1,0 +1,30 @@
+{
+  "name": "cognify-ai-chat",
+  "version": "1.0.0",
+  "description": "My first AI chat app using the latest advancements in natural language processing and machine learning.",
+  "homepage": "https://github.com/ysarka/cognify-ai-chat#readme",
+  "bugs": {
+    "url": "https://github.com/ysarka/cognify-ai-chat/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ysarka/cognify-ai-chat.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src/",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.1",
+    "globals": "^17.3.0"
+  }
+}
