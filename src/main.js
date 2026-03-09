@@ -6,6 +6,13 @@ const input = document.getElementById('chat-input');
 
 const messages = [];
 
+appendMessage('Hello! I am Cognify. How can I help you today?', 'ai');
+
+messages.push({
+    role: 'assistant',
+    content: 'Hello! I am Cognify. How can I help you today?',
+});
+
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
