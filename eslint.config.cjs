@@ -13,7 +13,7 @@ module.exports = [
     {
         files: ['**/*.js'],
         languageOptions: {
-            sourceType: 'commonjs',
+            sourceType: 'module',
         },
     },
     prettier,
