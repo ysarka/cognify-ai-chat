@@ -1,9 +1,11 @@
+import { OPENROUTER_KEY } from './config.js';
+
 export async function streamChat(messages, onDelta) {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            Authorization: 'Bearer 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',
+            Authorization: `Bearer ${OPENROUTER_KEY}`,
         },
         body: JSON.stringify({
             model: 'openai/gpt-4o-mini',
