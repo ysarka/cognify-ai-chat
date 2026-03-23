@@ -1,101 +1,112 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from './assets/vite.svg';
-import heroImg from './assets/hero.png';
-import './App.css';
+import { useEffect, useState } from 'react';
+import Sidebar from './components/sidebar/Sidebar.jsx';
+import ChatPanel from './components/chat/ChatPanel.jsx';
+import { createConversation } from './api/conversations.js';
+import { createMessage, getMessagesByConversationId } from './api/messages.js';
+import { requestLlmReply } from './api/llm.js';
 
 function App() {
-    const [count, setCount] = useState(0);
+    const [activeConversationId, setActiveConversationId] = useState('conv-1');
+    const [messages, setMessages] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
+
+    useEffect(() => {
+        let isCancelled = false;
+
+        async function loadMessages() {
+            if (!activeConversationId) {
+                return;
+            }
+
+            const loadedMessages = await getMessagesByConversationId(activeConversationId);
+
+            if (!isCancelled) {
+                setMessages(loadedMessages);
+            }
+        }
+
+        loadMessages();
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [activeConversationId]);
+
+    async function handleSelectConversation(conversationId) {
+        setActiveConversationId(conversationId);
+    }
+
+    async function handleNewChat() {
+        const newConversation = await createConversation('New Chat');
+        setActiveConversationId(newConversation.id);
+        setMessages([]);
+        setSidebarRefreshKey((prev) => prev + 1);
+    }
+
+    async function handleSendMessage(text) {
+        const trimmedText = text.trim();
+
+        if (!trimmedText || !activeConversationId || isLoading) {
+            return;
+        }
+
+        const conversationId = activeConversationId;
+
+        const userMessage = await createMessage({
+            conversationId,
+            role: 'user',
+            content: trimmedText,
+        });
+
+        setMessages((prev) => [...prev, userMessage]);
+        setIsLoading(true);
+
+        try {
+            const historyForApi = [...messages, userMessage].map((message) => ({
+                role: message.role,
+                content: message.content,
+            }));
+
+            const assistantReply = await requestLlmReply(historyForApi);
+
+            const assistantMessage = await createMessage({
+                conversationId,
+                role: 'assistant',
+                content: assistantReply,
+            });
+
+            if (conversationId === activeConversationId) {
+                setMessages((prev) => [...prev, assistantMessage]);
+            }
+        } catch {
+            const fallbackMessage = await createMessage({
+                conversationId,
+                role: 'assistant',
+                content: 'Sorry, I could not reach OpenRouter. Check your API key and try again.',
+            });
+
+            if (conversationId === activeConversationId) {
+                setMessages((prev) => [...prev, fallbackMessage]);
+            }
+        } finally {
+            if (conversationId === activeConversationId) {
+                setIsLoading(false);
+            }
+        }
+    }
 
     return (
-        <>
-            <section id="center">
-                <div className="hero">
-                    <img src={heroImg} className="base" width="170" height="179" alt="" />
-                    <img src={reactLogo} className="framework" alt="React logo" />
-                    <img src={viteLogo} className="vite" alt="Vite logo" />
-                </div>
-                <div>
-                    <h1>Get started</h1>
-                    <p>
-                        Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-                    </p>
-                </div>
-                <button className="counter" onClick={() => setCount((count) => count + 1)}>
-                    Count is {count}
-                </button>
-            </section>
+        <div className="flex h-screen bg-gray-100">
+            <Sidebar
+                activeConversationId={activeConversationId}
+                onSelectConversation={handleSelectConversation}
+                onNewChat={handleNewChat}
+                refreshKey={sidebarRefreshKey}
+            />
 
-            <div className="ticks"></div>
-
-            <section id="next-steps">
-                <div id="docs">
-                    <svg className="icon" role="presentation" aria-hidden="true">
-                        <use href="/icons.svg#documentation-icon"></use>
-                    </svg>
-                    <h2>Documentation</h2>
-                    <p>Your questions, answered</p>
-                    <ul>
-                        <li>
-                            <a href="https://vite.dev/" target="_blank">
-                                <img className="logo" src={viteLogo} alt="" />
-                                Explore Vite
-                            </a>
-                        </li>
-                        <li>
-                            <a href="https://react.dev/" target="_blank">
-                                <img className="button-icon" src={reactLogo} alt="" />
-                                Learn more
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <div id="social">
-                    <svg className="icon" role="presentation" aria-hidden="true">
-                        <use href="/icons.svg#social-icon"></use>
-                    </svg>
-                    <h2>Connect with us</h2>
-                    <p>Join the Vite community</p>
-                    <ul>
-                        <li>
-                            <a href="https://github.com/vitejs/vite" target="_blank">
-                                <svg className="button-icon" role="presentation" aria-hidden="true">
-                                    <use href="/icons.svg#github-icon"></use>
-                                </svg>
-                                GitHub
-                            </a>
-                        </li>
-                        <li>
-                            <a href="https://chat.vite.dev/" target="_blank">
-                                <svg className="button-icon" role="presentation" aria-hidden="true">
-                                    <use href="/icons.svg#discord-icon"></use>
-                                </svg>
-                                Discord
-                            </a>
-                        </li>
-                        <li>
-                            <a href="https://x.com/vite_js" target="_blank">
-                                <svg className="button-icon" role="presentation" aria-hidden="true">
-                                    <use href="/icons.svg#x-icon"></use>
-                                </svg>
-                                X.com
-                            </a>
-                        </li>
-                        <li>
-                            <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                                <svg className="button-icon" role="presentation" aria-hidden="true">
-                                    <use href="/icons.svg#bluesky-icon"></use>
-                                </svg>
-                                Bluesky
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </section>
-
-            <div className="ticks"></div>
-            <section id="spacer"></section>
-        </>
+            <ChatPanel messages={messages} isLoading={isLoading} onSendMessage={handleSendMessage} />
+        </div>
     );
 }
 
