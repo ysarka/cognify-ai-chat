@@ -1,5 +1,7 @@
 import ChatPanel from '@/components/ChatPanel';
 
-export default function ChatPage({ params }: { params: { id: string } }) {
-    return <ChatPanel activeConversationId={params.id} />;
+export default async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+
+    return <ChatPanel activeConversationId={id} />;
 }
