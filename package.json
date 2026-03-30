@@ -1,30 +1,31 @@
 {
   "name": "cognify-ai-chat",
-  "version": "1.0.0",
-  "description": "My first AI chat app using the latest advancements in natural language processing and machine learning.",
-  "homepage": "https://github.com/ysarka/cognify-ai-chat#readme",
-  "bugs": {
-    "url": "https://github.com/ysarka/cognify-ai-chat/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ysarka/cognify-ai-chat.git"
-  },
-  "license": "ISC",
-  "author": "",
-  "type": "commonjs",
-  "main": "src/index.js",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
+  "dependencies": {
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
     "prettier": "^3.8.1",
-    "@eslint/js": "^10.0.1",
-    "eslint": "^10.0.1",
-    "globals": "^17.3.0"
+    "vite": "^8.0.1"
   }
 }

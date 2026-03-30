@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Cognify AI Chat</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+
+    <body class="h-screen flex bg-gray-100">
+        <aside class="hidden md:flex w-64 flex-shrink-0 bg-gray-900 text-white flex-col">
+            <div class="p-4 border-b border-gray-700">
+                <button class="w-full bg-blue-600 hover:bg-blue-500 rounded-lg px-4 py-2">+ New Chat</button>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto p-2 space-y-2">
+                <a href="#" class="block px-3 py-2 rounded-lg bg-gray-700"> Conversation 1 </a>
+
+                <a href="#" class="block px-3 py-2 rounded-lg hover:bg-gray-700"> Conversation 2 </a>
+            </nav>
+        </aside>
+
+        <main class="flex flex-col flex-1 bg-white">
+            <div class="flex-1 overflow-y-auto p-6 space-y-4 message-list"></div>
+
+            <form id="chat-form" class="border-t bg-white p-4">
+                <div class="flex gap-2 items-end max-w-3xl mx-auto">
+                    <textarea
+                        id="chat-input"
+                        rows="1"
+                        placeholder="Message AI..."
+                        class="flex-1 resize-none rounded-xl border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    ></textarea>
+
+                    <button type="submit" class="bg-blue-600 text-white rounded-xl px-4 py-2 flex-shrink-0">
+                        Send
+                    </button>
+                </div>
+            </form>
+        </main>
+
+        <script type="module" src="main.js"></script>
+    </body>
+</html>
