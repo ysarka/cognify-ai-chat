@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import Providers from './providers';
 
 export const metadata: Metadata = {
     title: 'Cognify AI Chat',
-    description: 'Next.js chat assignment migration',
+    description: 'Next.js chat app with TanStack Query and Prisma',
 };
 
 export default function RootLayout({
@@ -13,7 +14,9 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className="bg-gray-100 text-gray-900 antialiased">{children}</body>
+            <body className="bg-gray-100 text-gray-900 antialiased">
+                <Providers>{children}</Providers>
+            </body>
         </html>
     );
 }

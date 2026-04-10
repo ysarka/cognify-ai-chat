@@ -1,23 +1,40 @@
 import { NextResponse } from 'next/server';
-import { chatStore, getNextMessageId } from '@/server/db';
+import { prisma } from '@/lib/prisma';
 import { requestLlmReply } from '@/server/openrouter';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 
-    const exists = chatStore.conversations.some((conversation) => conversation.id === id);
+    const conversation = await prisma.conversation.findUnique({
+        where: { id },
+        select: { id: true },
+    });
 
-    if (!exists) {
+    if (!conversation) {
         return NextResponse.json({ error: 'Conversation not found.' }, { status: 404 });
     }
 
-    return NextResponse.json(chatStore.messages.filter((message) => message.conversationId === id));
+    const messages = await prisma.message.findMany({
+        where: { conversationId: id },
+        orderBy: { createdAt: 'asc' },
+        select: {
+            id: true,
+            conversationId: true,
+            role: true,
+            content: true,
+        },
+    });
+
+    return NextResponse.json(messages);
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 
-    const conversation = chatStore.conversations.find((item) => item.id === id);
+    const conversation = await prisma.conversation.findUnique({
+        where: { id },
+        select: { id: true, title: true },
+    });
 
     if (!conversation) {
         return NextResponse.json({ error: 'Conversation not found.' }, { status: 404 });
@@ -31,21 +48,28 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
             return NextResponse.json({ error: 'Message content is required.' }, { status: 400 });
         }
 
-        const userMessage = {
-            id: getNextMessageId(),
-            conversationId: id,
-            role: 'user' as const,
-            content,
-        };
+        const userMessage = await prisma.message.create({
+            data: {
+                conversationId: id,
+                role: 'user',
+                content,
+            },
+            select: {
+                id: true,
+                conversationId: true,
+                role: true,
+                content: true,
+            },
+        });
 
-        chatStore.messages.push(userMessage);
-
-        const history = chatStore.messages
-            .filter((message) => message.conversationId === id)
-            .map((message) => ({
-                role: message.role,
-                content: message.content,
-            }));
+        const history = await prisma.message.findMany({
+            where: { conversationId: id },
+            orderBy: { createdAt: 'asc' },
+            select: {
+                role: true,
+                content: true,
+            },
+        });
 
         let assistantContent: string;
 
@@ -55,17 +79,27 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
             assistantContent = 'Sorry, I could not reach OpenRouter. Check your API key and try again.';
         }
 
-        const assistantMessage = {
-            id: getNextMessageId(),
-            conversationId: id,
-            role: 'assistant' as const,
-            content: assistantContent,
-        };
-
-        chatStore.messages.push(assistantMessage);
+        const assistantMessage = await prisma.message.create({
+            data: {
+                conversationId: id,
+                role: 'assistant',
+                content: assistantContent,
+            },
+            select: {
+                id: true,
+                conversationId: true,
+                role: true,
+                content: true,
+            },
+        });
 
         if (conversation.title === 'New Chat') {
-            conversation.title = content.slice(0, 30) || 'New Chat';
+            await prisma.conversation.update({
+                where: { id },
+                data: {
+                    title: content.slice(0, 30) || 'New Chat',
+                },
+            });
         }
 
         return NextResponse.json({ userMessage, assistantMessage }, { status: 201 });
