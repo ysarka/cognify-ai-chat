@@ -1,30 +1,18 @@
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1';
 const MODEL_NAME = 'openai/gpt-4o-mini';
 
-export async function requestLlmReply(messages: Array<{ role: string; content: string }>) {
-    const apiKey = process.env.OPENROUTER_API_KEY;
+const openrouter = createOpenAICompatible({
+    name: 'openrouter',
+    apiKey: process.env.OPENROUTER_API_KEY,
+    baseURL: OPENROUTER_URL,
+});
 
-    if (!apiKey) {
+export function getOpenRouterModel() {
+    if (!process.env.OPENROUTER_API_KEY) {
         throw new Error('Missing OPENROUTER_API_KEY. Add it to .env.local.');
     }
 
-    const response = await fetch(OPENROUTER_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-            model: MODEL_NAME,
-            messages,
-        }),
-    });
-
-    if (!response.ok) {
-        throw new Error(`OpenRouter request failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    return data.choices?.[0]?.message?.content ?? 'Sorry, I could not generate a reply.';
+    return openrouter(MODEL_NAME);
 }

@@ -1,5 +1,3 @@
-'use client';
-
 export default function MessageBubble({ role, text }: { role: 'user' | 'assistant'; text: string }) {
     const isUser = role === 'user';
 

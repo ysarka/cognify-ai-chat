@@ -1,21 +1,15 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { deleteConversation, getConversation } from '@/server/conversations';
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
+    const conversation = await getConversation(id);
 
-    const existingConversation = await prisma.conversation.findUnique({
-        where: { id },
-        select: { id: true },
-    });
-
-    if (!existingConversation) {
+    if (!conversation) {
         return NextResponse.json({ error: 'Conversation not found.' }, { status: 404 });
     }
 
-    await prisma.conversation.delete({
-        where: { id },
-    });
+    await deleteConversation(id);
 
-    return new NextResponse(null, { status: 204 });
+    return NextResponse.json({ ok: true });
 }

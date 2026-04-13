@@ -1,64 +1,36 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
-import type { Message } from '@/types/chat';
-import { getConversations, getMessages, sendMessage } from '@/lib/api';
+import { DefaultChatTransport, type UIMessage } from 'ai';
+import { useChat } from '@ai-sdk/react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import MessageList from './MessageList';
 import ChatInput from './ChatInput';
 import LoadingIndicator from './LoadingIndicator';
 
-export default function ChatPanel({ activeConversationId }: { activeConversationId: string }) {
-    const queryClient = useQueryClient();
+export default function ChatPanel({
+    activeConversationId,
+    activeConversationTitle,
+    initialMessages,
+}: {
+    activeConversationId: string;
+    activeConversationTitle: string;
+    initialMessages: UIMessage[];
+}) {
+    const router = useRouter();
     const [input, setInput] = useState('');
-    const [error, setError] = useState('');
 
-    const { data: messages = [] } = useQuery({
-        queryKey: ['messages', activeConversationId],
-        queryFn: () => getMessages(activeConversationId),
-        enabled: Boolean(activeConversationId),
-    });
-
-    const { data: conversations = [] } = useQuery({
-        queryKey: ['conversations'],
-        queryFn: getConversations,
-    });
-
-    const activeConversationTitle = useMemo(() => {
-        return conversations.find((conversation) => conversation.id === activeConversationId)?.title ?? 'New Chat';
-    }, [activeConversationId, conversations]);
-
-    const sendMessageMutation = useMutation({
-        mutationFn: (content: string) => sendMessage(activeConversationId, content),
-        onMutate: async (content) => {
-            setError('');
-            await queryClient.cancelQueries({ queryKey: ['messages', activeConversationId] });
-
-            const previousMessages = queryClient.getQueryData<Message[]>(['messages', activeConversationId]) ?? [];
-
-            const optimisticUserMessage: Message = {
-                id: `temp-${Date.now()}`,
+    const { messages, sendMessage, status, error } = useChat({
+        id: activeConversationId,
+        messages: initialMessages,
+        transport: new DefaultChatTransport({
+            api: '/api/chat',
+            body: {
                 conversationId: activeConversationId,
-                role: 'user',
-                content,
-            };
-
-            queryClient.setQueryData<Message[]>(
-                ['messages', activeConversationId],
-                [...previousMessages, optimisticUserMessage],
-            );
-
-            setInput('');
-
-            return { previousMessages };
-        },
-        onError: (mutationError, _content, context) => {
-            queryClient.setQueryData(['messages', activeConversationId], context?.previousMessages ?? []);
-            setError(mutationError instanceof Error ? mutationError.message : 'Could not send the message.');
-        },
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ['messages', activeConversationId] });
-            await queryClient.invalidateQueries({ queryKey: ['conversations'] });
+            },
+        }),
+        onFinish: () => {
+            router.refresh();
         },
     });
 
@@ -67,12 +39,15 @@ export default function ChatPanel({ activeConversationId }: { activeConversation
 
         const trimmedInput = input.trim();
 
-        if (!trimmedInput || sendMessageMutation.isPending) {
+        if (!trimmedInput || status !== 'ready') {
             return;
         }
 
-        sendMessageMutation.mutate(trimmedInput);
+        setInput('');
+        await sendMessage({ text: trimmedInput });
     }
+
+    const isPending = status === 'submitted' || status === 'streaming';
 
     return (
         <section className="flex min-h-screen flex-1 flex-col bg-white">
@@ -80,17 +55,13 @@ export default function ChatPanel({ activeConversationId }: { activeConversation
                 <h1 className="text-lg font-semibold text-gray-900">{activeConversationTitle}</h1>
             </header>
 
-            {error ? <div className="px-6 pt-4 text-sm text-red-600">{error}</div> : null}
+            {error ? <div className="px-6 pt-4 text-sm text-red-600">{error.message}</div> : null}
 
             <MessageList messages={messages} />
-            {sendMessageMutation.isPending ? <LoadingIndicator /> : null}
 
-            <ChatInput
-                value={input}
-                onChange={setInput}
-                onSubmit={handleSubmit}
-                disabled={sendMessageMutation.isPending}
-            />
+            {status === 'submitted' || status === 'streaming' ? <LoadingIndicator /> : null}
+
+            <ChatInput value={input} onChange={setInput} onSubmit={handleSubmit} disabled={isPending} />
         </section>
     );
 }

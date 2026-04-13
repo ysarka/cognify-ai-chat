@@ -1,5 +1,3 @@
-'use client';
-
 export default function LoadingIndicator() {
     return (
         <div className="px-6 pb-2">

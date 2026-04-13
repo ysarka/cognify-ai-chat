@@ -1,4 +1,4 @@
-import type { Conversation, Message } from '@/types/chat';
+import type { Conversation } from '@/types/chat';
 
 async function fetchJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
     const response = await fetch(input, init);
@@ -19,10 +19,6 @@ async function fetchJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> 
     }
 
     return data as T;
-}
-
-export function getConversations() {
-    return fetchJson<Conversation[]>('/api/conversations');
 }
 
 export function createConversation(title: string) {
@@ -54,21 +50,4 @@ export async function deleteConversation(conversationId: string) {
 
         throw new Error(message);
     }
-}
-
-export function getMessages(conversationId: string) {
-    return fetchJson<Message[]>(`/api/conversations/${conversationId}/messages`);
-}
-
-export function sendMessage(conversationId: string, content: string) {
-    return fetchJson<{ userMessage: Message; assistantMessage: Message }>(
-        `/api/conversations/${conversationId}/messages`,
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ content }),
-        },
-    );
 }
