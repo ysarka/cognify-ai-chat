@@ -37,3 +37,10 @@ export async function createUserMessage(conversationId: string, content: string)
 export async function createAssistantMessage(conversationId: string, content: string): Promise<Message> {
     return createMessage(conversationId, 'assistant', content);
 }
+
+export function toModelMessages(messages: Message[]) {
+    return messages.map((message) => ({
+        role: message.role,
+        content: message.content,
+    }));
+}

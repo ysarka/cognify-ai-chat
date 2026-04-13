@@ -1,6 +1,6 @@
-import { convertToModelMessages, streamText, type UIMessage } from 'ai';
+import { streamText, type UIMessage } from 'ai';
 import { getConversation, updateConversationTitleIfNeeded } from '@/server/conversations';
-import { createAssistantMessage, createUserMessage } from '@/server/messages';
+import { createAssistantMessage, createUserMessage, listMessages, toModelMessages } from '@/server/messages';
 import { getOpenRouterModel } from '@/server/openrouter';
 
 function getTextFromMessage(message: UIMessage) {
@@ -46,9 +46,11 @@ export async function POST(request: Request) {
         await createUserMessage(conversationId, userContent);
         await updateConversationTitleIfNeeded(conversationId, conversation.title, userContent);
 
+        const persistedMessages = await listMessages(conversationId);
+
         const result = streamText({
             model: getOpenRouterModel(),
-            messages: await convertToModelMessages(messages),
+            messages: toModelMessages(persistedMessages),
         });
 
         return result.toUIMessageStreamResponse({
