@@ -35,6 +35,27 @@ export function createConversation(title: string) {
     });
 }
 
+export async function deleteConversation(conversationId: string) {
+    const response = await fetch(`/api/conversations/${conversationId}`, {
+        method: 'DELETE',
+    });
+
+    if (!response.ok) {
+        let data: unknown = null;
+
+        try {
+            data = await response.json();
+        } catch {}
+
+        const message =
+            data && typeof data === 'object' && 'error' in data && typeof data.error === 'string'
+                ? data.error
+                : 'Could not delete the conversation.';
+
+        throw new Error(message);
+    }
+}
+
 export function getMessages(conversationId: string) {
     return fetchJson<Message[]>(`/api/conversations/${conversationId}/messages`);
 }

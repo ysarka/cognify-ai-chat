@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server';
-import { chatStore, getNextConversationId } from '@/server/db';
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
-    return NextResponse.json(chatStore.conversations);
+    const conversations = await prisma.conversation.findMany({
+        orderBy: { createdAt: 'desc' },
+        select: {
+            id: true,
+            title: true,
+        },
+    });
+
+    return NextResponse.json(conversations);
 }
 
 export async function POST(request: Request) {
@@ -11,12 +19,13 @@ export async function POST(request: Request) {
 
         const title = typeof body?.title === 'string' && body.title.trim() ? body.title.trim() : 'New Chat';
 
-        const conversation = {
-            id: getNextConversationId(),
-            title,
-        };
-
-        chatStore.conversations.unshift(conversation);
+        const conversation = await prisma.conversation.create({
+            data: { title },
+            select: {
+                id: true,
+                title: true,
+            },
+        });
 
         return NextResponse.json(conversation, { status: 201 });
     } catch {
