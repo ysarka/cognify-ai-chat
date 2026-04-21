@@ -89,11 +89,21 @@ export function useCreateConversationMutation() {
             queryClient.setQueryData(conversationsQueryKey, context?.previous ?? []);
         },
         onSuccess: (createdConversation, _title, context) => {
-            queryClient.setQueryData<Conversation[]>(conversationsQueryKey, (current = []) =>
-                current.map((conversation) =>
-                    conversation.id === context?.optimisticConversationId ? createdConversation : conversation,
-                ),
-            );
+            queryClient.setQueryData<Conversation[]>(conversationsQueryKey, (current = []) => {
+                const withoutOptimistic = current.filter(
+                    (conversation) => conversation.id !== context?.optimisticConversationId,
+                );
+
+                const alreadyExists = withoutOptimistic.some(
+                    (conversation) => conversation.id === createdConversation.id,
+                );
+
+                if (alreadyExists) {
+                    return withoutOptimistic;
+                }
+
+                return [createdConversation, ...withoutOptimistic];
+            });
         },
         onSettled: async () => {
             await queryClient.invalidateQueries({
