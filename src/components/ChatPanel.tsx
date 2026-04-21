@@ -24,7 +24,7 @@ export default function ChatPanel({
         id: activeConversationId,
         messages: initialMessages,
         transport: new DefaultChatTransport({
-            api: '/api/chat',
+            api: '/api/streaming-chat',
             body: {
                 conversationId: activeConversationId,
             },
