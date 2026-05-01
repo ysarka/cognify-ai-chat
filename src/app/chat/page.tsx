@@ -1,17 +1,11 @@
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+import { createConversation, getLatestConversation } from '@/server/conversations';
 
 export default async function ChatIndexPage() {
-    let conversation = await prisma.conversation.findFirst({
-        orderBy: { createdAt: 'desc' },
-        select: { id: true },
-    });
+    let conversation = await getLatestConversation();
 
     if (!conversation) {
-        conversation = await prisma.conversation.create({
-            data: { title: 'New Chat' },
-            select: { id: true },
-        });
+        conversation = await createConversation('New Chat');
     }
 
     redirect(`/chat/${conversation.id}`);
