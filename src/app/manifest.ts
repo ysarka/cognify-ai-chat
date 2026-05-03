@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
         name: 'Cognify AI Chat',
         short_name: 'Cognify',
         description: 'AI chat app for ACS-305',
-        start_url: '/chat',
+        start_url: '/',
         scope: '/',
         display: 'standalone',
         background_color: '#111827',
